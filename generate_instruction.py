@@ -41,10 +41,13 @@ def encode_prompt(prompt_instructions):
     return prompt
 
 
-def post_process_gpt3_response(num_prompt_instructions, response):
+def post_process_gpt3_response(num_prompt_instructions, response, model_name="text-davinci-003"):
     if response is None:
         return []
-    raw_instructions = f"{num_prompt_instructions+1}. Instruction:" + response["text"]
+    if model_name == "gpt-3.5-turbo":
+        raw_instructions = f"{num_prompt_instructions+1}. Instruction:" + response["message"]["content"]
+    else:
+        raw_instructions = f"{num_prompt_instructions+1}. Instruction:" + response["text"]
     raw_instructions = re.split("###", raw_instructions)
     instructions = []
     for idx, inst in enumerate(raw_instructions):
@@ -118,6 +121,11 @@ def generate_instruction_following_data(
     top_p=1.0,
     num_cpus=16,
 ):
+    if model_name == "gpt-3.5-turbo":
+        if request_batch_size != 1:
+            print("gpt-3.5-turbo only works with request_batch_size=1.")
+            exit()
+
     seed_tasks = [json.loads(l) for l in open(seed_tasks_path, "r")]
     seed_instruction_data = [
         {"instruction": t["instruction"], "input": t["instances"][0]["input"], "output": t["instances"][0]["output"]}
@@ -176,7 +184,7 @@ def generate_instruction_following_data(
         process_start = time.time()
         instruction_data = []
         for result in results:
-            new_instructions = post_process_gpt3_response(num_prompt_instructions, result)
+            new_instructions = post_process_gpt3_response(num_prompt_instructions, result, model_name=model_name)
             instruction_data += new_instructions
 
         total = len(instruction_data)
