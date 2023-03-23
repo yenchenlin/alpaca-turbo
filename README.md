@@ -73,7 +73,7 @@ We used the following prompts for fine-tuning the Alpaca model:
 
 1. Set environment variables `OPENAI_API_KEY` to your OpenAI API key.
 2. Install the dependencies with `pip install -r requirements.txt`.
-3. Run `python -m generate_instruction generate_instruction_following_data` to generate the data.
+3. Run `python -m generate_instruction generate_instruction_following_data --model_name gpt-3.5-turbo --request_batch_size 1` to generate the data.
 
 </details>
 
